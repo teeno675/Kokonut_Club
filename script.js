@@ -16,6 +16,7 @@ Object.assign(translations.es, {
 Object.assign(translations.en, { heroCopy: "Salt on your skin. Good people, nowhere else to be." });
 Object.assign(translations.es, { heroCopy: "Sal en la piel. Buena gente y ningún otro lugar donde estar." });
 Object.assign(translations.en, {
+  heroLocation: "Lae, Papua New Guinea",
   whereText: "Voco Point, Butibum Road<br>Lae, Morobe Province 411, Papua New Guinea",
   areaCopy: "At Voco Point, the shoreline and palm-lined edge of Lae are part of the club's everyday setting.",
   areaLink: "Find us on the map",
@@ -23,6 +24,7 @@ Object.assign(translations.en, {
   postalAddressLabel: "Postal address:"
 });
 Object.assign(translations.es, {
+  heroLocation: "Lae, Papúa Nueva Guinea",
   whereText: "Voco Point, Butibum Road<br>Lae, Morobe Province 411, Papúa Nueva Guinea",
   areaCopy: "En Voco Point, la costa y las palmeras de Lae forman parte del día a día del club.",
   areaLink: "Encuéntranos en el mapa",
