@@ -139,6 +139,11 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .calendar-legend { gap: 8px; margin-top: 14px; color: var(--ink-soft); font-size: 9px; }
 .legend-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--gold-dark); }
 .calendar-selection { min-height: 20px; margin-top: 9px; color: var(--ink-soft); font-size: 10px; }
+.event-empty-layout { grid-template-columns: minmax(0, 1fr) minmax(250px, .72fr); align-items: center; }
+.events-empty { max-width: 330px; margin: 0 auto; padding-left: 25px; border-left: 1px solid var(--gold-dark); }
+.events-empty .eyebrow { margin-bottom: 12px; }
+.events-empty h3 { margin: 0; font-family: var(--serif); font-size: 31px; font-weight: 500; line-height: 1.2; }
+.events-empty > p:last-child { margin: 12px 0 0; color: var(--ink-soft); font-size: 11px; }
 .upcoming-heading { display: flex; align-items: baseline; justify-content: space-between; margin-top: 70px; padding-bottom: 13px; border-bottom: 1px solid var(--line); }
 .upcoming-heading h3 { margin: 0; font-family: var(--serif); font-size: 25px; font-weight: 500; }
 .upcoming-heading > span { color: var(--ink-soft); font-size: 9px; }

@@ -29,6 +29,22 @@ Object.assign(translations.es, {
   footerLocationLabel: "Ubicación del club",
   postalAddressLabel: "Dirección postal:"
 });
+Object.assign(translations.en, {
+  eventsAside: "We’ll post the next gathering here once it’s confirmed.",
+  calendarKicker: "Event dates",
+  calendarLegend: "No event dates are confirmed yet.",
+  noConfirmedEyebrow: "For now",
+  noConfirmedTitle: "No confirmed events just yet.",
+  noConfirmedCopy: "We’ll share the next gathering as soon as it’s set."
+});
+Object.assign(translations.es, {
+  eventsAside: "Publicaremos aquí el próximo encuentro cuando esté confirmado.",
+  calendarKicker: "Fechas de eventos",
+  calendarLegend: "Todavía no hay fechas confirmadas.",
+  noConfirmedEyebrow: "Por ahora",
+  noConfirmedTitle: "Aún no hay eventos confirmados.",
+  noConfirmedCopy: "Compartiremos el próximo encuentro cuando tenga fecha."
+});
 
 const root = document.documentElement;
 const languageButtons = document.querySelectorAll("[data-language]");
@@ -38,30 +54,11 @@ const nav = document.querySelector(".primary-nav");
 const calendarMonth = document.querySelector("#calendar-month");
 const calendarDays = document.querySelector("#calendar-days");
 const calendarSelection = document.querySelector("#calendar-selection");
-const upcomingList = document.querySelector("#upcoming-list");
-const bookingDialog = document.querySelector("#booking-dialog");
-const bookingForm = document.querySelector("#booking-form");
-const bookingStatus = document.querySelector("#booking-status");
 let language = localStorage.getItem("kokonut-language") || "en";
 let displayedMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
 let selectedDate = null;
-let activeBooking = null;
-let toastTimeout;
 
-function nextWeekday(weekday, minimumDaysAhead) {
-  const date = new Date();
-  date.setHours(0, 0, 0, 0);
-  date.setDate(date.getDate() + minimumDaysAhead);
-  date.setDate(date.getDate() + (weekday - date.getDay() + 7) % 7);
-  return date;
-}
-
-const events = [
-  { id: 0, date: nextWeekday(5, 1), content: 0, time: 0 },
-  { id: 1, date: nextWeekday(6, 8), content: 1, time: 1 },
-  { id: 2, date: nextWeekday(5, 15), content: 2, time: 2 },
-  { id: 3, date: nextWeekday(0, 22), content: 3, time: 3 }
-].sort((first, second) => first.date - second.date);
+const events = [];
 
 function text(key, values = {}) {
   let value = translations[language][key] ?? translations.en[key] ?? key;
@@ -94,15 +91,10 @@ function applyTranslations() {
     button.setAttribute("aria-pressed", String(active));
   });
   updateThemeLabel();
-  renderEvents();
   renderCalendar();
   if (selectedDate) calendarSelection.textContent = text("selectedDate", { date: formatDate(selectedDate, { dateStyle: "medium" }) });
   const applicationStatus = document.querySelector("#application-status");
   if (applicationStatus.dataset.messageKey) applicationStatus.textContent = text(applicationStatus.dataset.messageKey, { name: applicationStatus.dataset.name || "" });
-  if (bookingStatus.dataset.messageKey) bookingStatus.textContent = text(bookingStatus.dataset.messageKey);
-  if (bookingDialog.open && activeBooking) renderBookingDetails(activeBooking);
-  const toast = document.querySelector("#site-toast");
-  if (toast.classList.contains("is-visible")) toast.textContent = text(toast.dataset.messageKey, { name: toast.dataset.name || "", guests: toast.dataset.guests || "" });
 }
 
 function setLanguage(nextLanguage) {
@@ -129,60 +121,8 @@ function formatDate(date, options) {
   return new Intl.DateTimeFormat(language, options).format(date);
 }
 
-function eventDetails(event) {
-  return { ...event, ...translations[language].events[event.content], timeLabel: translations[language].eventTimes[event.time] };
-}
-
-function renderFeaturedEvent() {
-  const featured = eventDetails(events[0]);
-  document.querySelector("#featured-date").textContent = formatDate(featured.date, { weekday: "short", month: "short", day: "numeric" });
-  document.querySelector("#featured-time").textContent = featured.timeLabel;
-  document.querySelector("#featured-title").textContent = featured.name;
-  document.querySelector("#featured-description").textContent = featured.description;
-  document.querySelector("[data-feature-book]").dataset.eventId = featured.id;
-}
-
 function sameDate(first, second) {
   return first.getFullYear() === second.getFullYear() && first.getMonth() === second.getMonth() && first.getDate() === second.getDate();
-}
-
-function renderEvents(dateFilter = null) {
-  renderFeaturedEvent();
-  const visibleEvents = dateFilter ? events.filter((event) => sameDate(event.date, dateFilter)) : events;
-  upcomingList.replaceChildren();
-  if (!visibleEvents.length) {
-    const empty = document.createElement("p");
-    empty.className = "empty-events";
-    empty.textContent = text("noEvents");
-    upcomingList.append(empty);
-    return;
-  }
-  visibleEvents.forEach((event) => {
-    const details = eventDetails(event);
-    const article = document.createElement("article");
-    article.className = "upcoming-event";
-    const dateBlock = document.createElement("div");
-    dateBlock.className = "event-date-block";
-    const day = document.createElement("strong");
-    day.textContent = formatDate(details.date, { day: "2-digit" });
-    const month = document.createElement("span");
-    month.textContent = formatDate(details.date, { month: "short" });
-    dateBlock.append(day, month);
-    const info = document.createElement("div");
-    const heading = document.createElement("h4");
-    heading.textContent = details.name;
-    const description = document.createElement("p");
-    description.textContent = `${formatDate(details.date, { weekday: "short" })} · ${details.timeLabel} · ${details.description}`;
-    info.append(heading, description);
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "event-book";
-    button.dataset.eventId = String(details.id);
-    button.textContent = text("book");
-    button.setAttribute("aria-label", `${text("book")}: ${details.name}`);
-    article.append(dateBlock, info, button);
-    upcomingList.append(article);
-  });
 }
 
 function startOfToday() {
@@ -229,37 +169,9 @@ function renderCalendar() {
       selectedDate = date;
       calendarSelection.textContent = text("selectedDate", { date: formatDate(date, { dateStyle: "medium" }) });
       renderCalendar();
-      renderEvents(date);
     });
     calendarDays.append(button);
   }
-}
-
-function openBooking(eventId) {
-  const event = events.find((item) => item.id === Number(eventId));
-  if (!event) return;
-  activeBooking = event;
-  renderBookingDetails(event);
-  bookingStatus.dataset.messageKey = "";
-  bookingStatus.textContent = "";
-  bookingStatus.classList.remove("is-error");
-  bookingForm.reset();
-  bookingDialog.showModal();
-}
-
-function renderBookingDetails(event) {
-  const details = eventDetails(event);
-  document.querySelector("#booking-event-name").textContent = `${details.name} · ${formatDate(details.date, { weekday: "long", month: "long", day: "numeric" })} · ${details.timeLabel}`;
-}
-
-function showToast(message) {
-  const toast = document.querySelector("#site-toast");
-  toast.textContent = message;
-  toast.dataset.messageKey = "bookingSuccess";
-  toast.dataset.name = toast.dataset.name || "";
-  toast.classList.add("is-visible");
-  clearTimeout(toastTimeout);
-  toastTimeout = setTimeout(() => toast.classList.remove("is-visible"), 3800);
 }
 
 languageButtons.forEach((button) => button.addEventListener("click", () => setLanguage(button.dataset.language)));
@@ -269,35 +181,7 @@ document.querySelectorAll("[data-calendar-shift]").forEach((button) => button.ad
   selectedDate = null;
   calendarSelection.textContent = "";
   renderCalendar();
-  renderEvents();
 }));
-upcomingList.addEventListener("click", (event) => {
-  const button = event.target.closest("[data-event-id]");
-  if (button) openBooking(button.dataset.eventId);
-});
-document.querySelector("[data-feature-book]").addEventListener("click", (event) => openBooking(event.currentTarget.dataset.eventId));
-document.querySelector(".dialog-close").addEventListener("click", () => bookingDialog.close());
-bookingDialog.addEventListener("click", (event) => {
-  if (event.target === bookingDialog) bookingDialog.close();
-});
-bookingForm.addEventListener("submit", (event) => {
-  event.preventDefault();
-  const formData = new FormData(bookingForm);
-  if (!bookingForm.reportValidity()) {
-    bookingStatus.textContent = text("bookingError");
-    bookingStatus.dataset.messageKey = "bookingError";
-    bookingStatus.classList.add("is-error");
-    return;
-  }
-  bookingStatus.classList.remove("is-error");
-  const name = String(formData.get("name")).trim();
-  const guests = String(formData.get("guests"));
-  const toast = document.querySelector("#site-toast");
-  toast.dataset.name = name;
-  toast.dataset.guests = guests;
-  showToast(text("bookingSuccess", { name, guests }), "bookingSuccess", { name, guests });
-  bookingDialog.close();
-});
 document.querySelector("#application-form").addEventListener("submit", (event) => {
   event.preventDefault();
   const form = event.currentTarget;
@@ -334,7 +218,6 @@ document.querySelector("#copyright-year").textContent = String(new Date().getFul
 window.addEventListener("scroll", () => {
   document.querySelector(".site-header").classList.toggle("is-scrolled", window.scrollY > 24);
 }, { passive: true });
-bookingDialog.addEventListener("close", () => { activeBooking = null; });
 applyTranslations();
 
 if ("IntersectionObserver" in window) {
