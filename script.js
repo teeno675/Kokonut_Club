@@ -47,6 +47,32 @@ Object.assign(translations.es, {
   noConfirmedTitle: "Aún no hay eventos confirmados.",
   noConfirmedCopy: "Compartiremos el próximo encuentro cuando tenga fecha."
 });
+Object.assign(translations.en, {
+  brandHome: "Kokonas Club home",
+  introCopy: "A tucked-away stretch of coast where barefoot afternoons turn into candlelit nights. Kokonas is a place to exhale, find your people, and let the hours do what they want.",
+  heroImageAlt: "Kokonas Club members sharing time together by the sea",
+  membershipImageAlt: "Kokonas Club members gathered by the sea beneath a pavilion",
+  areaImageAlt: "Aerial view of the Kokonas coastline, palms, and shoreline",
+  messagePlaceholder: "What brings you to Kokonas?",
+  metaDescription: "Kokonas Club is a private beach and social club for slow days, long nights, and the people who make both unforgettable."
+});
+Object.assign(translations.es, {
+  brandHome: "Inicio de Kokonas Club",
+  introCopy: "Un rincón escondido de la costa donde las tardes descalzas se convierten en noches a la luz de las velas. Kokonas es un lugar para respirar, encontrar a los tuyos y dejar que el tiempo fluya.",
+  heroImageAlt: "Miembros de Kokonas Club compartiendo junto al mar",
+  membershipImageAlt: "Miembros de Kokonas Club reunidos junto al mar bajo un pabellón",
+  areaImageAlt: "Vista aérea de la costa de Kokonas, sus palmeras y la orilla",
+  messagePlaceholder: "¿Qué te trae a Kokonas?",
+  metaDescription: "Kokonas Club es un club privado de playa y vida social para días tranquilos, noches largas y la buena gente que hace inolvidables ambas cosas."
+});
+Object.assign(translations.en, {
+  palmAction: "Grow the coconut tree and drop a coconut",
+  palmActionStatus: "The tree grew and a coconut fell."
+});
+Object.assign(translations.es, {
+  palmAction: "Haz crecer la palmera y deja caer un coco",
+  palmActionStatus: "La palmera creció y cayó un coco."
+});
 
 const root = document.documentElement;
 const languageButtons = document.querySelectorAll("[data-language]");
@@ -56,9 +82,12 @@ const nav = document.querySelector(".primary-nav");
 const calendarMonth = document.querySelector("#calendar-month");
 const calendarDays = document.querySelector("#calendar-days");
 const calendarSelection = document.querySelector("#calendar-selection");
+const palmControl = document.querySelector(".palm-control");
+const palmStatus = document.querySelector("#palm-status");
 let language = localStorage.getItem("kokonut-language") || "en";
 let displayedMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
 let selectedDate = null;
+let palmAnimationTimeout;
 
 const events = [];
 
@@ -85,7 +114,7 @@ function applyTranslations() {
   });
   menuToggle.setAttribute("aria-label", text(menuToggle.getAttribute("aria-expanded") === "true" ? "menuClose" : "menuOpen"));
   document.documentElement.lang = language;
-  document.title = language === "es" ? "Kokonut Club — Quédate un poco más" : "Kokonut Club — Stay a little longer";
+  document.title = language === "es" ? "Kokonas Club — Quédate un poco más" : "Kokonas Club — Stay a little longer";
   document.querySelector('meta[name="description"]').content = text("metaDescription");
   languageButtons.forEach((button) => {
     const active = button.dataset.language === language;
@@ -97,6 +126,7 @@ function applyTranslations() {
   if (selectedDate) calendarSelection.textContent = text("selectedDate", { date: formatDate(selectedDate, { dateStyle: "medium" }) });
   const applicationStatus = document.querySelector("#application-status");
   if (applicationStatus.dataset.messageKey) applicationStatus.textContent = text(applicationStatus.dataset.messageKey, { name: applicationStatus.dataset.name || "" });
+  if (palmStatus.dataset.messageKey) palmStatus.textContent = text(palmStatus.dataset.messageKey);
 }
 
 function setLanguage(nextLanguage) {
@@ -178,6 +208,17 @@ function renderCalendar() {
 
 languageButtons.forEach((button) => button.addEventListener("click", () => setLanguage(button.dataset.language)));
 themeToggle.addEventListener("click", () => setTheme(root.dataset.theme === "dark" ? "light" : "dark"));
+palmControl.addEventListener("click", () => {
+  clearTimeout(palmAnimationTimeout);
+  palmControl.classList.remove("has-grown", "is-growing", "is-dropping");
+  void palmControl.offsetWidth;
+  palmControl.classList.add("has-grown", "is-growing", "is-dropping");
+  palmStatus.dataset.messageKey = "palmActionStatus";
+  palmStatus.textContent = text("palmActionStatus");
+  palmAnimationTimeout = setTimeout(() => {
+    palmControl.classList.remove("is-growing", "is-dropping");
+  }, 1600);
+});
 document.querySelectorAll("[data-calendar-shift]").forEach((button) => button.addEventListener("click", () => {
   displayedMonth.setMonth(displayedMonth.getMonth() + Number(button.dataset.calendarShift));
   selectedDate = null;
